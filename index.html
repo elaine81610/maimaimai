@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>二手家具與好物大出清</title>
+  <title> 9910 之搬家大出清！ </title>
   <style>
     :root {
       --primary-color: #06C755;
@@ -373,8 +373,9 @@
 <body>
 
   <header>
-    <h1>搬家二手家具與好物大出清</h1>
-    <p>地點：台北市（交易方式請參考商品細節）</p>
+    <h1> 行動代號 9910 之搬家大出清！</h1>
+    <p> ◈ 地點：台北市南港區（近舊莊國小）</p>
+    <p> ◈ 優先面交，小物品才全家寄送 </p>
   </header>
 
   <!-- 上方切換頁籤 -->
@@ -582,12 +583,13 @@
         // 按鈕列
         html += '    <div class="btn-group">';
         if (item.officialUrl) {
-          html += '      <a href="' + item.officialUrl + '" target="_blank" class="btn btn-official">';
+          html += '      <a href="' + item.officialUrl + '" target="_blank" rel="noopener" class="btn btn-official">';
           html += '        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>';
           html += '        參考原廠規格 / 頁面</a>';
         }
         if (item.status !== 'sold') {
-          html += '      <button class="btn btn-line" onclick="contactLine(\'' + encodeURIComponent(message) + '\')">私訊 LINE 購買 / 排候補</button>';
+          // 使用純 HTML 連結進行直連跳轉，解決彈出視窗被阻擋的問題
+          html += '      <a href="' + LINE_FRIEND_URL + '" target="_blank" rel="noopener" class="btn btn-line" onclick="copyOnDirectClick(\'' + encodeURIComponent(message) + '\')">私訊 LINE 購買 / 排候補</a>';
           html += '      <button class="btn btn-copy" onclick="copyText(\'' + message + '\')">複製詢問文字</button>';
         } else {
           html += '      <button class="btn btn-copy" disabled style="opacity: 0.5;">已售出 / 已送出</button>';
@@ -600,17 +602,10 @@
       }
     }
 
-    function contactLine(encodedMsg) {
+    function copyOnDirectClick(encodedMsg) {
       var text = decodeURIComponent(encodedMsg);
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(function() {
-          alert('已自動複製詢問文字！跳轉至 LINE 後直接貼上發送即可。');
-          window.open(LINE_FRIEND_URL, '_blank');
-        }).catch(function() {
-          window.open(LINE_FRIEND_URL, '_blank');
-        });
-      } else {
-        window.open(LINE_FRIEND_URL, '_blank');
+        navigator.clipboard.writeText(text);
       }
     }
 

@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>二手家具與好物大出清</title>
+  <style>
+    :root {
+      --primary-color: #06C755;
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+      --border-color: #e9ecef;
+      --warning-color: #d97706;
+      --success-color: #28a745;
+      --discount-color: #e63946;
+      --free-color: #ff6b6b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.5;
+      padding-bottom: 40px;
+    }
+
+    header {
+      background-color: var(--card-bg);
+      text-align: center;
+      padding: 20px 16px 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      font-size: 0.85rem;
+      color: #6c757d;
+    }
+
+    /* 上方分類標籤頁 */
+    .filter-container {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: #fff;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      overflow-x: auto;
+    }
+
+    .filter-tab {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      background: #f1f3f5;
+      color: #495057;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .filter-tab.active {
+      background: #333;
+      color: #fff;
+      border-color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 16px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    /* 卡片與 16:9 圖庫 */
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .gallery-wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 比例 */
+      background-color: #eee;
+      overflow: hidden;
+    }
+
+    .gallery-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      cursor: pointer;
+    }
+
+    .gallery-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.4);
+      color: white;
+      border: none;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 10;
+    }
+
+    .gallery-btn.prev { left: 8px; }
+    .gallery-btn.next { right: 8px; }
+
+    .gallery-dots {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      z-index: 10;
+    }
+
+    .status-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: white;
+      z-index: 10;
+    }
+
+    .status-available { background-color: var(--success-color); }
+    .status-waiting { background-color: var(--warning-color); color: #fff; }
+    .status-sold { background-color: #6c757d; }
+
+    .card-content {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .price-container {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .current-price {
+      font-size: 1.4rem;
+      color: var(--discount-color);
+      font-weight: bold;
+    }
+
+    .free-price {
+      font-size: 1.3rem;
+      color: var(--free-color);
+      font-weight: bold;
+    }
+
+    .original-price {
+      font-size: 0.85rem;
+      color: #8c9297;
+      text-decoration: line-through;
+    }
+
+    .discount-badge {
+      background-color: #ffe3e3;
+      color: var(--discount-color);
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .info-list {
+      margin-bottom: 12px;
+      font-size: 0.85rem;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .info-tag {
+      background: #f1f3f5;
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: #495057;
+      font-weight: bold;
+    }
+
+    .waiting-info {
+      color: var(--warning-color);
+      font-weight: bold;
+    }
+
+    .card-details {
+      font-size: 0.9rem;
+      color: #495057;
+      margin-bottom: 12px;
+      flex-grow: 1;
+      background: #fafafa;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px dashed #e9ecef;
+      white-space: pre-line;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-official {
+      background-color: #e7f5ff;
+      color: #1971c2;
+      border: 1px solid #d0ebff;
+    }
+
+    .btn-line {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-copy {
+      background-color: #e9ecef;
+      color: #495057;
+    }
+
+    .loading-text, .no-products {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 40px 0;
+      color: #8c9297;
+    }
+
+    /* 全螢幕大圖 Lightbox */
+    .lightbox-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.92);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .lightbox-img {
+      max-width: 95%;
+      max-height: 85vh;
+      object-fit: contain;
+    }
+
+    .lightbox-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2010;
+    }
+
+    .lightbox-btn.prev { left: 12px; }
+    .lightbox-btn.next { right: 12px; }
+
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      color: white;
+      font-size: 2rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      z-index: 2010;
+    }
+
+    .lightbox-indicator {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      background: rgba(0,0,0,0.6);
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+    }
+
+    .svg-icon {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>搬家二手家具與好物大出清</h1>
+    <p>地點：台北市（交易方式請參考商品細節）</p>
+  </header>
+
+  <!-- 上方切換頁籤 -->
+  <div class="filter-container">
+    <button class="filter-tab active" onclick="filterProducts('all', this)">全部商品</button>
+    <button class="filter-tab" onclick="filterProducts('available', this)">我還在</button>
+    <button class="filter-tab" onclick="filterProducts('free', this)">免費贈送</button>
+    <button class="filter-tab" onclick="filterProducts('waiting', this)">候補中</button>
+    <button class="filter-tab" onclick="filterProducts('sold', this)">已售出</button>
+  </div>
+
+  <div class="container" id="product-container">
+    <div class="loading-text">資料載入中...</div>
+  </div>
+
+  <!-- 全螢幕大圖 Lightbox -->
+  <div class="lightbox-modal" id="lightbox-modal">
+    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    <button class="lightbox-btn prev" id="lightbox-prev" onclick="changeLightboxImg(-1)">&lt;</button>
+    <img id="lightbox-img" class="lightbox-img" src="" alt="大圖">
+    <button class="lightbox-btn next" id="lightbox-next" onclick="changeLightboxImg(1)">&gt;</button>
+    <div class="lightbox-indicator" id="lightbox-indicator">1 / 1</div>
+  </div>
+
+  <script>
+    var LINE_FRIEND_URL = "https://line.me/ti/p/xT4swRSTbH"; 
+    var GAS_URL = "https://script.google.com/macros/s/AKfycbwgqYclX-jAR0O-Aog9v9wt65d-G38COWJ4Dv4jghCXwYXnEaT_oeMiBNufHl2eLFPMUw/exec";
+
+    var products = [];
+    var currentFilter = "all";
+    var currentImageIndexes = {};
+    var activeLightboxProduct = null;
+    var activeLightboxIndex = 0;
+
+    // JSONP 回呼函式
+    window.onGasDataLoaded = function(data) {
+      if (data && data.error) {
+        console.error("GAS 回傳錯誤:", data.error);
+        document.getElementById('product-container').innerHTML = 
+          '<div class="no-products">讀取 Google Sheet 失敗，請再試一次。</div>';
+        return;
+      }
+      parseGasRows(data || []);
+      renderProducts();
+    };
+
+    // 動態載入 JSONP
+    function loadGasData() {
+      var script = document.createElement('script');
+      script.src = GAS_URL + "?callback=onGasDataLoaded";
+      script.onerror = function() {
+        document.getElementById('product-container').innerHTML = 
+          '<div class="no-products">資料載入失敗，請確認網路連線。</div>';
+      };
+      document.body.appendChild(script);
+    }
+
+    // 解析資料
+    function parseGasRows(rows) {
+      products = rows.map(function(row) {
+        var id = String(row["編號"] || "");
+        var title = String(row["物品"] || "");
+        var size = String(row["尺寸"] || "");
+        var rawPhotos = String(row["照片"] || "");
+        var officialUrl = String(row["原始網址"] || "");
+        var origPrice = parseFloat(row["原購入價"]) || null;
+        var sellPrice = parseFloat(row["賣價"]) || 0;
+        var shipping = String(row["方式"] || "");
+        var details = String(row["狀態"] || row["狀態/細節"] || "");
+        var statusRaw = String(row["交易狀態"] || "我還在");
+        var waitingCount = parseInt(row["候補人數"]) || 0;
+
+        // 拆分多圖（全角或半角逗號隔開）
+        var images = rawPhotos.split(/[,，]/).map(function(u) {
+          return u.trim();
+        }).filter(function(u) {
+          return u.length > 0;
+        });
+
+        var status = "available";
+        if (statusRaw.indexOf("候補") !== -1) status = "waiting";
+        if (statusRaw.indexOf("已售") !== -1 || statusRaw.indexOf("已送") !== -1) status = "sold";
+
+        return {
+          id: id,
+          title: title,
+          size: size,
+          isFree: sellPrice === 0,
+          originalPrice: origPrice,
+          price: sellPrice,
+          status: status,
+          waitingCount: waitingCount,
+          shipping: shipping,
+          officialUrl: officialUrl && officialUrl.indexOf("http") === 0 ? officialUrl : null,
+          details: details,
+          images: images.length > 0 ? images : ["https://via.placeholder.com/800x450?text=No+Image"]
+        };
+      });
+    }
+
+    function filterProducts(status, btnElement) {
+      currentFilter = status;
+      var tabs = document.querySelectorAll('.filter-tab');
+      for (var i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
+      }
+      btnElement.classList.add('active');
+      renderProducts();
+    }
+
+    function renderProducts() {
+      var container = document.getElementById('product-container');
+      container.innerHTML = '';
+
+      var filtered = products.filter(function(item) {
+        if (currentFilter === 'all') return true;
+        if (currentFilter === 'free') return item.isFree && item.status !== 'sold';
+        return item.status === currentFilter;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="no-products">目前此分類沒有項目</div>';
+        return;
+      }
+
+      for (var i = 0; i < filtered.length; i++) {
+        var item = filtered[i];
+        if (currentImageIndexes[item.id] === undefined) {
+          currentImageIndexes[item.id] = 0;
+        }
+
+        var discountText = "";
+        if (!item.isFree && item.originalPrice && item.originalPrice > item.price) {
+          var discount = ((item.price / item.originalPrice) * 10).toFixed(1);
+          discountText = discount + " 折";
+        }
+
+        var badgeText = "";
+        var statusClass = "";
+        var waitingDetailText = "";
+
+        if (item.status === 'available') {
+          badgeText = '我還在';
+          statusClass = 'status-available';
+          waitingDetailText = '我還在，歡迎直接私訊詢問';
+        } else if (item.status === 'waiting') {
+          badgeText = '候補中';
+          statusClass = 'status-waiting';
+          waitingDetailText = '目前已有 ' + item.waitingCount + ' 位候補中';
+        } else {
+          badgeText = '已售出';
+          statusClass = 'status-sold';
+          waitingDetailText = '已送出 / 已售出';
+        }
+
+        var priceMsg = item.isFree ? "免費贈送" : "價格: NT$" + item.price;
+        var message = "你好，我想詢問：【" + item.title + "】(" + priceMsg + ")，請問目前還有嗎？";
+
+        var hasMultipleImgs = item.images.length > 1;
+
+        var html = '';
+        html += '<div class="card">';
+        
+        // 圖片區域
+        html += '  <div class="gallery-wrapper">';
+        html += '    <img id="img-' + item.id + '" class="gallery-img" src="' + item.images[currentImageIndexes[item.id]] + '" alt="' + item.title + '" onclick="openLightbox(\'' + item.id + '\')">';
+        html += '    <span class="status-badge ' + statusClass + '">' + badgeText + '</span>';
+        if (hasMultipleImgs) {
+          html += '    <button class="gallery-btn prev" onclick="changeProductImg(\'' + item.id + '\', -1)">&lt;</button>';
+          html += '    <button class="gallery-btn next" onclick="changeProductImg(\'' + item.id + '\', 1)">&gt;</button>';
+          html += '    <div class="gallery-dots" id="dots-' + item.id + '">' + (currentImageIndexes[item.id] + 1) + ' / ' + item.images.length + '</div>';
+        }
+        html += '  </div>';
+
+        // 卡片內容
+        html += '  <div class="card-content">';
+        html += '    <div class="card-title">' + item.title + '</div>';
+        
+        // 價格標示
+        html += '    <div class="price-container">';
+        if (item.isFree) {
+          html += '      <span class="free-price">免費贈送 $0</span>';
+        } else {
+          html += '      <span class="current-price">NT$ ' + item.price.toLocaleString() + '</span>';
+        }
+
+        if (item.originalPrice) {
+          html += '    <span class="original-price">原價 $ ' + item.originalPrice.toLocaleString() + '</span>';
+        }
+        if (discountText) {
+          html += '    <span class="discount-badge">' + discountText + '</span>';
+        }
+        html += '    </div>';
+
+        // 狀態與交貨方式
+        html += '    <div class="info-list">';
+        html += '      <div class="info-item"><span class="info-tag">狀態</span> <span class="waiting-info">' + waitingDetailText + '</span></div>';
+        if (item.shipping) {
+          html += '    <div class="info-item"><span class="info-tag">交貨</span> <span>' + item.shipping + '</span></div>';
+        }
+        html += '    </div>';
+
+        html += '    <div class="card-details">' + item.details + '</div>';
+        
+        // 按鈕列
+        html += '    <div class="btn-group">';
+        if (item.officialUrl) {
+          html += '      <a href="' + item.officialUrl + '" target="_blank" class="btn btn-official">';
+          html += '        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>';
+          html += '        參考原廠規格 / 頁面</a>';
+        }
+        if (item.status !== 'sold') {
+          html += '      <button class="btn btn-line" onclick="contactLine(\'' + encodeURIComponent(message) + '\')">私訊 LINE 購買 / 排候補</button>';
+          html += '      <button class="btn btn-copy" onclick="copyText(\'' + message + '\')">複製詢問文字</button>';
+        } else {
+          html += '      <button class="btn btn-copy" disabled style="opacity: 0.5;">已售出 / 已送出</button>';
+        }
+        html += '    </div>';
+        html += '  </div>';
+        html += '</div>';
+
+        container.innerHTML += html;
+      }
+    }
+
+    function contactLine(encodedMsg) {
+      var text = decodeURIComponent(encodedMsg);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          alert('已自動複製詢問文字！跳轉至 LINE 後直接貼上發送即可。');
+          window.open(LINE_FRIEND_URL, '_blank');
+        }).catch(function() {
+          window.open(LINE_FRIEND_URL, '_blank');
+        });
+      } else {
+        window.open(LINE_FRIEND_URL, '_blank');
+      }
+    }
+
+    function changeProductImg(productId, direction) {
+      var item = products.find(function(p) { return p.id === productId; });
+      if (!item) return;
+
+      var total = item.images.length;
+      var newIndex = currentImageIndexes[productId] + direction;
+
+      if (newIndex < 0) newIndex = total - 1;
+      if (newIndex >= total) newIndex = 0;
+
+      currentImageIndexes[productId] = newIndex;
+      document.getElementById('img-' + productId).src = item.images[newIndex];
+      document.getElementById('dots-' + productId).innerText = (newIndex + 1) + ' / ' + total;
+    }
+
+    function openLightbox(productId) {
+      var item = products.find(function(p) { return p.id === productId; });
+      if (!item) return;
+
+      activeLightboxProduct = item;
+      activeLightboxIndex = currentImageIndexes[productId] || 0;
+
+      updateLightboxView();
+      document.getElementById('lightbox-modal').style.display = 'flex';
+    }
+
+    function updateLightboxView() {
+      if (!activeLightboxProduct) return;
+
+      var total = activeLightboxProduct.images.length;
+      document.getElementById('lightbox-img').src = activeLightboxProduct.images[activeLightboxIndex];
+      document.getElementById('lightbox-indicator').innerText = (activeLightboxIndex + 1) + ' / ' + total;
+
+      var prevBtn = document.getElementById('lightbox-prev');
+      var nextBtn = document.getElementById('lightbox-next');
+
+      if (total <= 1) {
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+      } else {
+        prevBtn.style.display = 'flex';
+        nextBtn.style.display = 'flex';
+      }
+    }
+
+    function changeLightboxImg(direction) {
+      if (!activeLightboxProduct) return;
+
+      var total = activeLightboxProduct.images.length;
+      activeLightboxIndex += direction;
+
+      if (activeLightboxIndex < 0) activeLightboxIndex = total - 1;
+      if (activeLightboxIndex >= total) activeLightboxIndex = 0;
+
+      updateLightboxView();
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox-modal').style.display = 'none';
+      activeLightboxProduct = null;
+    }
+
+    function copyText(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          alert('已複製詢問文字！');
+        }).catch(function() {
+          prompt('請手動複製文字：', text);
+        });
+      } else {
+        prompt('請手動複製文字：', text);
+      }
+    }
+
+    // 初始化載入
+    loadGasData();
+  </script>
+</body>
+</html>
